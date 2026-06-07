@@ -17,6 +17,14 @@ const PORT = process.env.PORT || 3000;
 // Rooms are created on demand and cleaned up when empty
 const rooms = new Map();
 
+// ─── Root ─────────────────────────────────────────────────────────────────────
+// Required for Railway's HTTP router to confirm the service is reachable via
+// the public domain. Without this, requests to / return 404 and traffic
+// routing fails.
+app.get('/', (req, res) => {
+  res.json({ status: 'ok', service: 'signaling-server' });
+});
+
 // ─── Health check ────────────────────────────────────────────────────────────
 // Railway and Fly.io use this to confirm the server is alive
 app.get('/health', (req, res) => {
