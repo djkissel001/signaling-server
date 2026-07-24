@@ -1,19 +1,6 @@
 const express = require('express');
 const http = require('http');
 const { Server } = require('socket.io');
-const Turn = require('node-turn');
-
-// ─── Local TURN server ────────────────────────────────────────────────────────
-// Runs on UDP/TCP 3478 so emulators and devices on the same LAN can relay
-// WebRTC traffic without depending on the public openrelay server.
-const turnServer = new Turn({
-  authMech: 'long-term',
-  credentials: { elemental: 'inv3ntory' },
-  listeningPort: 3478,
-  debugLevel: 'INFO',
-});
-turnServer.start();
-console.log('TURN server listening on port 3478');
 
 const app = express();
 const server = http.createServer(app);
