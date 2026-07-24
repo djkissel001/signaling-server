@@ -1,6 +1,19 @@
 const express = require('express');
 const http = require('http');
 const { Server } = require('socket.io');
+const Turn = require('node-turn');
+
+// ─── Local TURN server ────────────────────────────────────────────────────────
+// Runs on UDP/TCP 3478 so emulators and devices on the same LAN can relay
+// WebRTC traffic without depending on the public openrelay server.
+const turnServer = new Turn({
+  authMech: 'long-term',
+  credentials: { elemental: 'inv3ntory' },
+  listeningPort: 3478,
+  debugLevel: 'INFO',
+});
+turnServer.start();
+console.log('TURN server listening on port 3478');
 
 const app = express();
 const server = http.createServer(app);
@@ -138,6 +151,36 @@ io.on('connection', (socket) => {
     if (!target) return; // Silently ignore — target may have disconnected
 
     io.to(target.socketId).emit('ice-candidate', { from: currentPeerId, candidate });
+  });
+
+  // ── broadcast-action ──────────────────────────────────────────────────────
+  // Relay a game action to all other peers in the room.
+  // Used by both DM and players to propagate inventory/gold/etc changes.
+  socket.on('broadcast-action', (action) => {
+    if (!currentRoom) return;
+    socket.to(currentRoom).emit('action-received', action);
+  });
+
+  // ── send-state ─────────────────────────────────────────────────────────────
+  // Relay full game state from DM to players.
+  // { to: peerId | null, state: object }
+  // If `to` is null, relays to all other peers in the room.
+  // If `to` is a peerId, relays only to that peer.
+  socket.on('send-state', ({ to, state }) => {
+    if (!currentRoom) return;
+    if (to) {
+      const target = getPeer(currentRoom, to);
+      if (target) io.to(target.socketId).emit('state-received', state);
+    } else {
+      socket.to(currentRoom).emit('state-received', state);
+    }
+  });
+
+  // ── broadcast-notification ─────────────────────────────────────────────────
+  // Relay a UI notification to all other peers in the room.
+  socket.on('broadcast-notification', (notification) => {
+    if (!currentRoom) return;
+    socket.to(currentRoom).emit('notification-received', notification);
   });
 
   // ── leave-room ─────────────────────────────────────────────────────────────
