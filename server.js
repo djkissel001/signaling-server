@@ -5,6 +5,7 @@ const { Server } = require('socket.io');
 const app = express();
 const server = http.createServer(app);
 const io = new Server(server, {
+  maxHttpBufferSize: 10e6, // 10 MB — needed for large custom inventory syncs
   cors: {
     origin: '*', // Lock this down to your app's domain in production
     methods: ['GET', 'POST']
