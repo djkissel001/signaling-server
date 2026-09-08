@@ -1,0 +1,134 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Elemental Inventory — Features</title>
+<meta name="description" content="Everything Elemental Inventory runs for your table: time keeping, loot, shops, barter, crafting, macros, and live multiplayer sync.">
+<link rel="icon" href="/icons/ei-icon-favicon.png">
+<link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+
+<header class="site-header">
+  <div class="nav-inner">
+    <a class="brand" href="/"><img src="/icons/ei-icon-nav.png" alt="" class="brand-icon"> Elemental Inventory</a>
+    <nav class="nav-links">
+      <a href="/">Home</a>
+      <a href="/features" class="current">Features</a>
+      <a href="/support">Support</a>
+      <a href="/download">Download</a>
+      <a href="/contact">Contact</a>
+    </nav>
+  </div>
+</header>
+
+<main>
+
+  <section class="hero" style="padding-bottom:24px;">
+    <p class="eyebrow">What it runs</p>
+    <h1>Everything that used to be a spreadsheet</h1>
+    <p class="desc">One shared inventory, economy, and clock for the whole table — hosted by the DM's own device, no cloud database required.</p>
+  </section>
+
+  <section style="padding-top:0;">
+    <div class="feature-row feature-row-media">
+      <div>
+        <span class="tag">Session</span>
+        <h3><img class="h3-icon" src="/icons/clock.png" alt="">Time Keeper</h3>
+        <p>Advances turns, minutes, hours, and days independently, with counters that tick on a Per Turn / Per Hour / Per Day rate — or sit at Static so nothing touches them. A counter can be wired directly to an item, in a player's pack or sitting in Loot or Party Loot, gold included, so the two stay in sync on their own. Roll tables and dice-on-top-of-a-flat-increment are both supported for anything that should vary tick to tick.</p>
+      </div>
+      <div class="feature-shots">
+        <img class="feature-shot" src="/screenshots/timekeeper-dials.png" alt="Time Keeper's Day / Hours / Minutes / Turns dials">
+        <img class="feature-shot" src="/screenshots/timekeeper-counters.png" alt="Time Keeper's linked counters list">
+      </div>
+    </div>
+    <div class="feature-row">
+      <span class="tag">Session</span>
+      <h3><span class="h3-emoji">🎲</span>Dice Roller</h3>
+      <p>Standard d4–d100, a dice count, and a flat modifier, with a running result log for the table to scroll back through.</p>
+    </div>
+    <div class="feature-row feature-row-media">
+      <div>
+        <span class="tag">Economy</span>
+        <h3><img class="h3-icon" src="/icons/currency.png" alt="">Loot &amp; Party Loot</h3>
+        <p>Drop found treasure to a single player, or to a shared Party Loot pool that splits the carrying weight across the whole party. The DM can roll individual finds or a full hoard off built-in tables, with custom loot tables for custom systems, and Party Loot can split its gold evenly across every connected player in one tap.</p>
+      </div>
+      <div class="feature-shots">
+        <img class="feature-shot" src="/screenshots/add-loot.png" alt="Rolling loot from Individual Treasure and Generate Hoard tables">
+        <img class="feature-shot" src="/screenshots/loot-list.png" alt="A Loot manifest ready to send to players">
+      </div>
+    </div>
+    <div class="feature-row feature-row-media">
+      <div>
+        <span class="tag">Economy</span>
+        <h3><img class="h3-icon" src="/icons/shield.png" alt="">Shop</h3>
+        <p>Players spend their own gold against the current shop's stock, with discounts and fees per purchase. The DM runs multiple shop tabs at once, each auto-stocked by category and rarity. Lifestyle Expenses, Hirelings, and spellcasting services don't get bought outright — picking one opens a per-day gold drain instead.</p>
+      </div>
+      <div class="feature-shots">
+        <img class="feature-shot" src="/screenshots/shop-manager.png" alt="Shop Manager's item type and rarity toggles">
+        <img class="feature-shot" src="/screenshots/shop-list.png" alt="A shop's stocked inventory list">
+      </div>
+    </div>
+    <div class="feature-row feature-row-media">
+      <div>
+        <span class="tag">Economy</span>
+        <h3><img class="h3-icon" src="/icons/necklace.png" alt="">Barter</h3>
+        <p>A two-sided trade board — Requesting on top, Offering underneath — pulling from the full catalog, the current shop, a personal pack, or Party Loot. A live balance bar shows even, short, or surplus, and the board is shared with everyone connected in real time.</p>
+      </div>
+      <div class="feature-shots">
+        <img class="feature-shot" src="/screenshots/barter.png" alt="A Barter trade with requesting, offering, and surplus">
+      </div>
+    </div>
+    <div class="feature-row">
+      <span class="tag">Party</span>
+      <h3><img class="h3-icon" src="/icons/armor.png" alt="">Inventory</h3>
+      <p>Sort by name, weight, value, or category, with encumbrance and gold visible at a glance. Long-press any item to inspect, sell, discard, or hand it to another party member or to Party Loot.</p>
+    </div>
+    <div class="feature-row">
+      <span class="tag">Rules</span>
+      <h3><img class="h3-icon" src="/icons/magic-item.png" alt="">Custom Items &amp; Inventory Sets</h3>
+      <p>Author campaign-specific items on the fly, or swap in an entirely different catalog from an uploaded JSON file — your own homebrew system or setting, replacing the default list everywhere it's used. Updating it mid-session pushes to every connected player without anyone reconnecting. Building your own catalog? See the <a href="/custom-inventory-guide">Custom Inventory Guide</a> for the full file format.</p>
+    </div>
+    <div class="feature-row">
+      <span class="tag">Rules</span>
+      <h3><img class="h3-icon" src="/icons/axe.png" alt="">Crafting</h3>
+      <p>The crafting form itself changes with the ruleset — SRD, homebrew, and a Fallout-style variant that gates on a rarity-scaled skill check, with a chance to lose materials on a failed roll.</p>
+    </div>
+    <div class="feature-row">
+      <span class="tag">Automation</span>
+      <h3><img class="h3-icon" src="/icons/lightning.png" alt="">Macros</h3>
+      <p>Roll a die against a DC, then apply separate success and failure effects — an item's quantity or a Counter's value, each with its own bonus dice. Macros can chain into a follow-up macro on pass or fail, with a shared roll history for the table.</p>
+    </div>
+    <div class="feature-row feature-row-media">
+      <div>
+        <span class="tag">Network</span>
+        <h3><img class="h3-icon" src="/icons/map.png" alt="">Multiplayer &amp; Game Management</h3>
+        <p>The DM hosts, players join with an invite code — up to ten per game — and everything syncs peer-to-peer with no server holding your game state. Multiple saved game slots per device mean running more than one campaign is never a conflict.</p>
+      </div>
+      <div class="feature-shots">
+        <img class="feature-shot" src="/screenshots/dm-screen.png" alt="The DM Screen's full toolkit">
+      </div>
+    </div>
+  </section>
+
+  <section style="text-align:center;">
+    <a class="btn btn-primary" href="/download">Download for Android</a>
+  </section>
+
+</main>
+
+<footer class="site-footer">
+  <nav>
+    <a href="/">Home</a>
+    <a href="/features">Features</a>
+    <a href="/support">Support</a>
+    <a href="/download">Download</a>
+    <a href="/contact">Contact</a>
+    <a href="/privacy-policy">Privacy Policy</a>
+  </nav>
+  <p>© 2026 Elemental Inventory · <a href="mailto:elementalinventoryapp@gmail.com">elementalinventoryapp@gmail.com</a></p>
+</footer>
+
+</body>
+</html>

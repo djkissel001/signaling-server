@@ -1,0 +1,373 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Elemental Inventory — Custom Inventory Guide</title>
+<meta name="description" content="The JSON format reference for building a custom inventory set and loot tables for Elemental Inventory.">
+<link rel="icon" href="/icons/ei-icon-favicon.png">
+<link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+
+<header class="site-header">
+  <div class="nav-inner">
+    <a class="brand" href="/"><img src="/icons/ei-icon-nav.png" alt="" class="brand-icon"> Elemental Inventory</a>
+    <nav class="nav-links">
+      <a href="/">Home</a>
+      <a href="/features">Features</a>
+      <a href="/support">Support</a>
+      <a href="/download">Download</a>
+      <a href="/contact">Contact</a>
+    </nav>
+  </div>
+</header>
+
+<main>
+
+  <section class="hero" style="padding-bottom:16px;">
+    <p class="eyebrow">Reference</p>
+    <h1>Custom Inventory Guide</h1>
+    <p class="desc">The full JSON format for replacing the default item catalog with your own homebrew system — items, loot tables, and everything the importer checks along the way.</p>
+    <div class="hero-icons" aria-hidden="true">
+      <img src="/icons/book.png" alt="">
+      <img src="/icons/scroll.png" alt="">
+      <img src="/icons/magic-item.png" alt="">
+    </div>
+    <nav class="doc-jump" aria-label="Jump to section">
+      <a href="#file-structure">File Structure</a>
+      <a href="#items">Items</a>
+      <a href="#loot-tables">Loot Tables</a>
+      <a href="#instructions">Instructions</a>
+      <a href="#shop-manager">Shop Manager</a>
+      <a href="#full-example">Full Example</a>
+      <a href="#validation">Validation</a>
+      <a href="#mistakes">Common Mistakes</a>
+    </nav>
+  </section>
+
+  <section class="doc-section narrow" style="margin:0 auto;" id="file-structure">
+    <h2>File Structure</h2>
+    <p>Your JSON file is a top-level array with two required indexes and one optional index, always in this order.</p>
+
+    <div class="doc-table-wrap">
+      <table class="doc-table">
+        <tbody>
+          <tr><td class="doc-field">Index 0</td><td><span class="doc-badge doc-badge-req">Required</span></td><td>Array of inventory items</td></tr>
+          <tr><td class="doc-field">Index 1</td><td><span class="doc-badge doc-badge-req">Required</span></td><td>Array containing a single loot table object</td></tr>
+          <tr><td class="doc-field">Index 2</td><td><span class="doc-badge doc-badge-opt">Optional</span></td><td>String with system notes or usage guidelines</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="doc-code">
+      <div class="doc-code-label">JSON — top-level structure</div>
+      <pre>[
+  [ <span class="tok-comment">/* Index 0: Inventory Items     */</span> ],
+  [ <span class="tok-comment">/* Index 1: Loot Tables         */</span> ],
+  <span class="tok-str">"/* Index 2: Instructions (opt) */"</span>
+]</pre>
+    </div>
+  </section>
+
+  <section class="doc-section narrow" style="margin:0 auto;" id="items">
+    <h2>Index 0 — Inventory Items</h2>
+    <p>An array of every item available in your system. Each item is a JSON object with the fields below.</p>
+
+    <h3 class="doc-sub">Required Fields</h3>
+    <div class="doc-table-wrap">
+      <table class="doc-table">
+        <thead><tr><th>Field</th><th>Type</th><th>Description</th></tr></thead>
+        <tbody>
+          <tr><td class="doc-field">id</td><td>Number</td><td>Unique identifier. <strong>ID 0 is reserved for your main currency item.</strong></td></tr>
+          <tr><td class="doc-field">name</td><td>String</td><td>Item name. Must exactly match any loot table entry that references this item (case-sensitive).</td></tr>
+          <tr><td class="doc-field">quantity</td><td>Number</td><td>Starting amount. Use <code>0</code> for all items in template files.</td></tr>
+          <tr><td class="doc-field">cost</td><td>Object</td><td>Item value. Must be an object with a <code>quantity</code> property — not a plain number.</td></tr>
+          <tr><td class="doc-field">equipment_category</td><td>Object</td><td>Category for organization. Must be an object with a <code>name</code> property — not a plain string.</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="callout">
+      <strong>Important:</strong> <code>cost</code> and <code>equipment_category</code> must be objects, not plain values. The importer will attempt to normalize plain strings and numbers, but the correct format avoids unexpected results.
+    </div>
+
+    <h3 class="doc-sub">Recommended Fields</h3>
+    <div class="doc-table-wrap">
+      <table class="doc-table">
+        <thead><tr><th>Field</th><th>Type</th><th>Description</th></tr></thead>
+        <tbody>
+          <tr><td class="doc-field">desc</td><td>String</td><td>Item description shown in detail views. Not required by the validator but strongly recommended.</td></tr>
+          <tr><td class="doc-field">weight</td><td>Number</td><td>Item weight in your system's units.</td></tr>
+          <tr><td class="doc-field">rarity</td><td>Object</td><td>Rarity level. Must be an object with a <code>name</code> property — see valid values below.</td></tr>
+          <tr><td class="doc-field">recipe</td><td>Array</td><td>Crafting requirements listed as item names. Empty array if the item isn't craftable.</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h4>Rarity Values</h4>
+    <p>Rarity must be an <strong>object</strong> with a <code>name</code> property, and the value must be capitalized exactly as shown. A plain string, or the wrong capitalization, is silently ignored by rarity-based filters in Shop Manager.</p>
+    <div class="doc-table-wrap">
+      <table class="doc-table">
+        <thead><tr><th>Correct format</th><th>Won't filter</th></tr></thead>
+        <tbody>
+          <tr><td class="doc-field">{ "name": "Common" }</td><td><code>"common"</code></td></tr>
+          <tr><td class="doc-field">{ "name": "Uncommon" }</td><td><code>"uncommon"</code></td></tr>
+          <tr><td class="doc-field">{ "name": "Rare" }</td><td><code>"rare"</code></td></tr>
+          <tr><td class="doc-field">{ "name": "Very Rare" }</td><td><code>"very rare"</code></td></tr>
+          <tr><td class="doc-field">{ "name": "Legendary" }</td><td><code>"legendary"</code></td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h4>Example Item</h4>
+    <div class="doc-code">
+      <div class="doc-code-label">JSON — inventory item</div>
+      <pre>{
+  <span class="tok-key">"id"</span>: <span class="tok-num">0</span>,
+  <span class="tok-key">"name"</span>: <span class="tok-str">"Gold (c)"</span>,
+  <span class="tok-key">"desc"</span>: <span class="tok-str">"Standard gold coins used throughout the realm"</span>,
+  <span class="tok-key">"quantity"</span>: <span class="tok-num">0</span>,
+  <span class="tok-key">"weight"</span>: <span class="tok-num">1</span>,
+  <span class="tok-key">"cost"</span>: { <span class="tok-key">"quantity"</span>: <span class="tok-num">1</span> },
+  <span class="tok-key">"equipment_category"</span>: { <span class="tok-key">"name"</span>: <span class="tok-str">"Currency"</span> },
+  <span class="tok-key">"rarity"</span>: { <span class="tok-key">"name"</span>: <span class="tok-str">"Common"</span> },
+  <span class="tok-key">"recipe"</span>: []
+}</pre>
+    </div>
+  </section>
+
+  <section class="doc-section narrow" style="margin:0 auto;" id="loot-tables">
+    <h2>Index 1 — Loot Tables</h2>
+    <p>An array containing a <strong>single object</strong> whose keys are category names. Each category holds one or more named tables. Each table's <code>data</code> object maps roll results (keys <code>"1"</code>–<code>"100"</code>) to outcomes.</p>
+
+    <div class="doc-code">
+      <div class="doc-code-label">JSON — loot table structure</div>
+      <pre>[
+  {
+    <span class="tok-key">"CategoryName"</span>: {
+      <span class="tok-key">"category"</span>: <span class="tok-str">"Human-readable description"</span>,
+      <span class="tok-key">"tables"</span>: [
+        {
+          <span class="tok-key">"name"</span>: <span class="tok-str">"Table Name"</span>,
+          <span class="tok-key">"data"</span>: {
+            <span class="tok-key">"1"</span>:   <span class="tok-str">"Result for roll 1"</span>,
+            <span class="tok-key">"2"</span>:   <span class="tok-str">"Result for roll 2"</span>,
+            <span class="tok-comment">/* ... entries for every integer 1-100 */</span>
+            <span class="tok-key">"100"</span>: <span class="tok-str">"Result for roll 100"</span>
+          }
+        }
+      ]
+    }
+  }
+]</pre>
+    </div>
+
+    <h3 class="doc-sub">Roll Coverage</h3>
+    <p>The loot generator rolls a number from 1-100 and does a direct key lookup in <code>data</code>. A missing key produces a blank result with no error. <strong>Every integer from <code>"1"</code> to <code>"100"</code> must be present.</strong> Use repeated entries to control probability weighting:</p>
+    <div class="doc-code">
+      <div class="doc-code-label">JSON — weighted entries (Iron Sword 75%, Rare Chain 25%)</div>
+      <pre><span class="tok-key">"data"</span>: {
+  <span class="tok-key">"1"</span>:   <span class="tok-str">"Iron Sword"</span>,   <span class="tok-comment">/* rolls 1-75 all map to Iron Sword */</span>
+  <span class="tok-key">"75"</span>:  <span class="tok-str">"Iron Sword"</span>,
+  <span class="tok-key">"76"</span>:  <span class="tok-str">"[chain] [Weapon:Rare Drops]"</span>, <span class="tok-comment">/* 76-100 chain to another table */</span>
+  <span class="tok-key">"100"</span>: <span class="tok-str">"[chain] [Weapon:Rare Drops]"</span>
+}</pre>
+    </div>
+
+    <h3 class="doc-sub">Table Type 1 — Item Tables</h3>
+    <p>Reference an exact item name from your inventory. Capitalization and spacing must match.</p>
+    <div class="doc-code">
+      <div class="doc-code-label">JSON — item table entries</div>
+      <pre><span class="tok-key">"data"</span>: {
+  <span class="tok-key">"1"</span>:   <span class="tok-str">"Iron Sword"</span>,
+  <span class="tok-key">"50"</span>:  <span class="tok-str">"Steel Dagger"</span>,
+  <span class="tok-key">"75"</span>:  <span class="tok-str">"Leather Armor"</span>,
+  <span class="tok-key">"100"</span>: <span class="tok-str">"Chain Mail"</span>
+}</pre>
+    </div>
+
+    <h3 class="doc-sub">Table Type 2 — Currency Tables</h3>
+    <p>Use <code>[coin]</code> followed by a space and dice notation. The result is linked to your ID 0 currency item.</p>
+    <div class="doc-code">
+      <div class="doc-code-label">JSON — currency table entries</div>
+      <pre><span class="tok-key">"data"</span>: {
+  <span class="tok-key">"1"</span>:   <span class="tok-str">"[coin] 1d6 x 10"</span>,
+  <span class="tok-key">"50"</span>:  <span class="tok-str">"[coin] 2d6 x 25"</span>,
+  <span class="tok-key">"100"</span>: <span class="tok-str">"[coin] 3d6 x 50"</span>
+}</pre>
+    </div>
+    <p>Dice notation format: <code>[coin] XdY x Z</code> — <code>X</code> number of dice, <code>dY</code> die type, <code>x Z</code> the multiplier.</p>
+    <div class="callout">
+      <strong>Important:</strong> the <code>x Z</code> multiplier is required. <code>[coin] 2d6</code> without a multiplier produces <code>NaN</code> — the parser always expects the full three-part format.
+    </div>
+
+    <h3 class="doc-sub">Table Type 3 — Chain References</h3>
+    <p>Roll on a different table from within a result. Use the <code>[chain]</code> prefix followed by the target in <code>[CategoryName:TableName]</code> format — both parts must exactly match what's defined in your loot table object.</p>
+    <div class="doc-code">
+      <div class="doc-code-label">JSON — chain reference entries</div>
+      <pre><span class="tok-key">"data"</span>: {
+  <span class="tok-key">"1"</span>:   <span class="tok-str">"[chain] [Equipment:Basic Weapons]"</span>,
+  <span class="tok-key">"50"</span>:  <span class="tok-str">"[chain] [Magic Items:Table A]"</span>,
+  <span class="tok-key">"100"</span>: <span class="tok-str">"[chain] [Coins:Level 1]"</span>
+}</pre>
+    </div>
+    <div class="callout">
+      <strong>Important:</strong> a bare <code>[TableName]</code> without the <code>[chain]</code> prefix is not recognized as a reference — it's pushed to the generated list as a literal item named <code>[TableName]</code>. The full format <code>[chain] [CategoryName:TableName]</code> is required.
+    </div>
+  </section>
+
+  <section class="doc-section narrow" style="margin:0 auto;" id="instructions">
+    <h2>Index 2 — Instructions <span style="font-size:0.55em; color:var(--ink-faint); text-transform:none; letter-spacing:0;">(optional)</span></h2>
+    <p>A plain string at index 2 for any system-specific notes — currency conversion rates, level recommendations, custom rule clarifications, or version notes. Omitting this index entirely is fine.</p>
+    <div class="doc-code">
+      <div class="doc-code-label">JSON — instructions string</div>
+      <pre><span class="tok-str">"Fantasy RPG System v1.0. Use Level 1 coin tables for characters level 1-3. All weights are in pounds."</span></pre>
+    </div>
+  </section>
+
+  <section class="doc-section narrow" style="margin:0 auto;" id="shop-manager">
+    <h2>Shop Manager &amp; Naming</h2>
+    <p>The Shop Manager screen (<strong>Manage Shop</strong> button) builds its toggle list entirely from the <code>equipment_category.name</code> and <code>rarity.name</code> values found across your inventory. There are no hardcoded categories — everything comes from your data.</p>
+    <ul>
+      <li>A category named <code>"weapons"</code> and one named <code>"Weapon"</code> will appear as <strong>two separate toggles</strong></li>
+      <li>Rarity toggles only appear for items with a correctly structured <code>rarity</code> object — a plain string produces no toggle</li>
+      <li>Shop type filtering uses exact string matching throughout</li>
+    </ul>
+    <div class="callout">
+      <strong>Note:</strong> use identical <code>equipment_category.name</code> and <code>rarity.name</code> values across every item. Inconsistent capitalization or spacing creates duplicate or orphaned toggles in Shop Manager.
+    </div>
+  </section>
+
+  <section class="doc-section narrow" style="margin:0 auto;" id="full-example">
+    <h2>Complete File Example</h2>
+    <div class="doc-code">
+      <div class="doc-code-label">JSON — complete custom inventory file</div>
+      <pre>[
+  <span class="tok-comment">/* Index 0: Items */</span>
+  [
+    {
+      <span class="tok-key">"id"</span>: <span class="tok-num">0</span>, <span class="tok-key">"name"</span>: <span class="tok-str">"Gold (c)"</span>, <span class="tok-key">"desc"</span>: <span class="tok-str">"Standard gold currency"</span>,
+      <span class="tok-key">"quantity"</span>: <span class="tok-num">0</span>, <span class="tok-key">"weight"</span>: <span class="tok-num">1</span>, <span class="tok-key">"cost"</span>: { <span class="tok-key">"quantity"</span>: <span class="tok-num">1</span> },
+      <span class="tok-key">"equipment_category"</span>: { <span class="tok-key">"name"</span>: <span class="tok-str">"Currency"</span> }, <span class="tok-key">"rarity"</span>: { <span class="tok-key">"name"</span>: <span class="tok-str">"Common"</span> }, <span class="tok-key">"recipe"</span>: []
+    },
+    {
+      <span class="tok-key">"id"</span>: <span class="tok-num">1</span>, <span class="tok-key">"name"</span>: <span class="tok-str">"Iron Sword"</span>, <span class="tok-key">"desc"</span>: <span class="tok-str">"A basic iron sword"</span>,
+      <span class="tok-key">"quantity"</span>: <span class="tok-num">0</span>, <span class="tok-key">"weight"</span>: <span class="tok-num">3</span>, <span class="tok-key">"cost"</span>: { <span class="tok-key">"quantity"</span>: <span class="tok-num">10</span> },
+      <span class="tok-key">"equipment_category"</span>: { <span class="tok-key">"name"</span>: <span class="tok-str">"Weapon"</span> }, <span class="tok-key">"rarity"</span>: { <span class="tok-key">"name"</span>: <span class="tok-str">"Common"</span> }, <span class="tok-key">"recipe"</span>: []
+    },
+    {
+      <span class="tok-key">"id"</span>: <span class="tok-num">2</span>, <span class="tok-key">"name"</span>: <span class="tok-str">"Enchanted Blade"</span>, <span class="tok-key">"desc"</span>: <span class="tok-str">"A magically enhanced sword"</span>,
+      <span class="tok-key">"quantity"</span>: <span class="tok-num">0</span>, <span class="tok-key">"weight"</span>: <span class="tok-num">3</span>, <span class="tok-key">"cost"</span>: { <span class="tok-key">"quantity"</span>: <span class="tok-num">500</span> },
+      <span class="tok-key">"equipment_category"</span>: { <span class="tok-key">"name"</span>: <span class="tok-str">"Weapon"</span> }, <span class="tok-key">"rarity"</span>: { <span class="tok-key">"name"</span>: <span class="tok-str">"Rare"</span> }, <span class="tok-key">"recipe"</span>: []
+    }
+  ],
+
+  <span class="tok-comment">/* Index 1: Loot Tables */</span>
+  [
+    {
+      <span class="tok-key">"Coins"</span>: {
+        <span class="tok-key">"category"</span>: <span class="tok-str">"Currency"</span>,
+        <span class="tok-key">"tables"</span>: [
+          { <span class="tok-key">"name"</span>: <span class="tok-str">"Level 1"</span>, <span class="tok-key">"data"</span>: {
+            <span class="tok-key">"1"</span>: <span class="tok-str">"[coin] 1d6 x 10"</span>, <span class="tok-comment">/* rolls 1-49 */</span>
+            <span class="tok-key">"50"</span>: <span class="tok-str">"[coin] 2d6 x 25"</span>, <span class="tok-comment">/* rolls 50-89 */</span>
+            <span class="tok-key">"90"</span>: <span class="tok-str">"[coin] 3d6 x 50"</span>, <span class="tok-comment">/* rolls 90-100 */</span>
+            <span class="tok-key">"100"</span>: <span class="tok-str">"[coin] 3d6 x 50"</span>
+          } }
+        ]
+      },
+      <span class="tok-key">"Weapon"</span>: {
+        <span class="tok-key">"category"</span>: <span class="tok-str">"Weapons"</span>,
+        <span class="tok-key">"tables"</span>: [
+          { <span class="tok-key">"name"</span>: <span class="tok-str">"Standard Drops"</span>, <span class="tok-key">"data"</span>: {
+            <span class="tok-key">"1"</span>: <span class="tok-str">"Iron Sword"</span>, <span class="tok-comment">/* rolls 1-74 */</span>
+            <span class="tok-key">"75"</span>: <span class="tok-str">"[chain] [Weapon:Rare Drops]"</span>, <span class="tok-comment">/* rolls 75-100 */</span>
+            <span class="tok-key">"100"</span>: <span class="tok-str">"[chain] [Weapon:Rare Drops]"</span>
+          } },
+          { <span class="tok-key">"name"</span>: <span class="tok-str">"Rare Drops"</span>, <span class="tok-key">"data"</span>: {
+            <span class="tok-key">"1"</span>: <span class="tok-str">"Enchanted Blade"</span>,
+            <span class="tok-key">"100"</span>: <span class="tok-str">"Enchanted Blade"</span>
+          } }
+        ]
+      }
+    }
+  ],
+
+  <span class="tok-comment">/* Index 2: Instructions (optional) */</span>
+  <span class="tok-str">"Fantasy RPG System v1.0. Use Level 1 coin tables for characters level 1-3. Weights are in pounds."</span>
+]</pre>
+    </div>
+  </section>
+
+  <section class="doc-section narrow" style="margin:0 auto;" id="validation">
+    <h2>Validation</h2>
+    <p>When you upload a file, the importer runs the checks below. Skipped items are counted in the post-import summary alert.</p>
+
+    <h3 class="doc-sub">Errors — item skipped or file rejected</h3>
+    <ul>
+      <li>Invalid JSON syntax — entire file rejected</li>
+      <li>Incorrect top-level structure — must be an array</li>
+      <li>Item missing <code>id</code>, <code>name</code>, or <code>equipment_category</code></li>
+    </ul>
+
+    <h3 class="doc-sub">Automatic normalizations</h3>
+    <ul>
+      <li><code>equipment_category</code> as a plain string → converted to <code>{ "name": "..." }</code></li>
+      <li><code>cost</code> as a plain number → converted to <code>{ "quantity": ... }</code></li>
+    </ul>
+
+    <div class="callout">
+      <strong>Not currently checked — verify manually:</strong> duplicate item IDs, a missing currency item at ID 0, invalid dice notation in coin entries, item names in tables that don't exist in inventory, and gaps in roll key coverage (1-100).
+    </div>
+  </section>
+
+  <section class="doc-section narrow" style="margin:0 auto;" id="mistakes">
+    <h2>Best Practices</h2>
+    <ul>
+      <li>Validate your JSON with an online linter before importing</li>
+      <li><strong>Cover all 100 roll keys</strong> in every table — use repeated entries to control probability weighting</li>
+      <li>Keep <code>equipment_category.name</code> and <code>rarity.name</code> consistent across every item</li>
+      <li>Always include a currency item at ID 0</li>
+      <li>Test chain references end-to-end by generating loot in the app and checking results</li>
+      <li>Document currency conversion rates and custom rules in the Index 2 string</li>
+    </ul>
+
+    <h3 class="doc-sub" style="margin-top:36px;">Common Mistakes</h3>
+    <div class="doc-table-wrap">
+      <table class="doc-table">
+        <thead><tr><th>Mistake</th><th>Consequence</th></tr></thead>
+        <tbody>
+          <tr><td><code>rarity</code> as a plain string</td><td>Rarity filters silently ignored; item never appears under rarity toggles in Shop Manager</td></tr>
+          <tr><td>Table reference as <code>[TableName]</code> without <code>[chain]</code></td><td>Pushed as a literal item named <code>[TableName]</code> — no chain roll occurs</td></tr>
+          <tr><td>Missing <code>x Z</code> multiplier in coin notation</td><td>Currency result is <code>NaN</code></td></tr>
+          <tr><td>Gaps in roll keys 1-100</td><td>Missing rolls produce blank results with no error message</td></tr>
+          <tr><td>Inconsistent category capitalization</td><td>Duplicate or missing toggles in Shop Manager</td></tr>
+          <tr><td>No currency item at ID 0</td><td>Coin table results generate a blank item</td></tr>
+          <tr><td>Item name in table doesn't match inventory exactly</td><td>Item not found — not added to generated loot</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section style="text-align:center;">
+    <p style="color:var(--ink-soft); margin-bottom:20px;">Building a custom set and stuck on something not covered here?</p>
+    <a class="btn btn-primary" href="/contact">Contact Us</a>
+  </section>
+
+</main>
+
+<footer class="site-footer">
+  <nav>
+    <a href="/">Home</a>
+    <a href="/features">Features</a>
+    <a href="/support">Support</a>
+    <a href="/download">Download</a>
+    <a href="/contact">Contact</a>
+    <a href="/privacy-policy">Privacy Policy</a>
+  </nav>
+  <p>© 2026 Elemental Inventory · <a href="mailto:elementalinventoryapp@gmail.com">elementalinventoryapp@gmail.com</a></p>
+</footer>
+
+</body>
+</html>

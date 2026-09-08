@@ -1,2 +1,11 @@
 node_modules
 .env
+
+# Web app build output — on hold for now (see server.js's web-dist check).
+# Re-add this to the repo (drop this line, or `git add -f`) whenever that
+# work resumes and you want /app live again.
+web-dist
+
+# Stale local runtime logs, not deploy artifacts.
+err.log
+out.log

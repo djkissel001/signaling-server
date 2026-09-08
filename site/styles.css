@@ -1,0 +1,421 @@
+/* Elemental Inventory — marketing site
+   Leaning into a retro, homemade pixel-fantasy feel: Press Start 2P for
+   headlines and short UI labels (the classic 8-bit arcade look), VT323 for
+   card/feature titles (a chunky terminal font that stays readable at
+   sentence length, unlike Press Start 2P), Public Sans kept for body
+   copy — full-paragraph text in a bitmap font stops being charming and
+   starts being unreadable, so that's the one place polish wins over vibe.
+   Hard corners, thick outline borders, and flat offset "no-blur" shadows
+   throughout instead of the soft rounded-corner SaaS look — that hard
+   drop-shadow-with-no-blur is the single most recognizable signature of
+   pixel-game UI chrome, so it's used everywhere something used to float. */
+
+@import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&family=VT323&family=Public+Sans:wght@400;500;600;700&display=swap');
+
+:root {
+  --ink:        #16210E;
+  --ink-soft:   #3d5233;
+  --ink-faint:  #5c7350;
+  --leaf:       #3F9B1F;
+  --leaf-dark:  #245214;
+  --leaf-bright:#6FCF3D;
+  --peach:      #F7C985;
+  --gold:       #F4B942;
+  --ground:     #F5F8EF;
+  --tint:       #E9F3DF;
+  --header-bg:  #B6E3AA; /* sampled straight from ei-icon's own background */
+  --surface:    #ffffff;
+  --border:     var(--ink);
+  --danger:     #b3261e;
+  --pixel-shadow: 4px 4px 0 var(--ink);
+  --pixel-shadow-sm: 3px 3px 0 var(--ink);
+}
+
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+
+body {
+  margin: 0;
+  background-color: var(--ground);
+  /* A faint 8px pixel-grid behind the whole page — subtle enough to never
+     fight with text, present enough to read as "drawn on a grid" instead
+     of a flat corporate background. */
+  background-image:
+    linear-gradient(90deg, rgba(22,33,14,0.05) 1px, transparent 1px),
+    linear-gradient(rgba(22,33,14,0.05) 1px, transparent 1px);
+  background-size: 8px 8px;
+  color: var(--ink);
+  font-family: 'Public Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  line-height: 1.6;
+  font-size: 16px;
+}
+
+h1, h2 {
+  font-family: 'Press Start 2P', 'Zilla Slab', Georgia, serif;
+  text-wrap: balance;
+  margin: 0 0 0.7em;
+  line-height: 1.5;
+  letter-spacing: 0.01em;
+}
+h3 {
+  font-family: 'VT323', 'Zilla Slab', Georgia, serif;
+  text-wrap: balance;
+  margin: 0 0 0.35em;
+  line-height: 1.2;
+  letter-spacing: 0.01em;
+}
+p { margin: 0 0 1em; }
+a { color: var(--leaf-dark); }
+
+.eyebrow {
+  font-family: 'Press Start 2P', monospace;
+  font-size: 10px;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  /* --leaf-dark, not --leaf — at this small size, --leaf's contrast against
+     --ground (3.30:1) falls under WCAG AA's 4.5:1; --leaf-dark clears it
+     comfortably (8.53:1). */
+  color: var(--leaf-dark);
+}
+
+/* ── Nav ─────────────────────────────────────────────────────────────── */
+.site-header {
+  background: var(--header-bg);
+  border-bottom: 4px solid var(--ink);
+  padding: 0 24px;
+}
+.nav-inner {
+  max-width: 1080px;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 72px;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--ink);
+  font-family: 'Press Start 2P', 'Zilla Slab', Georgia, serif;
+  font-size: 13px;
+  letter-spacing: 0.01em;
+  text-decoration: none;
+}
+.brand-icon {
+  width: 36px;
+  height: 36px;
+  image-rendering: pixelated;
+}
+.nav-links {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+.nav-links a {
+  /* --ink, not --ink-soft — at this small bold size, ink-soft's contrast
+     against the lighter header-bg falls just under WCAG AA's 4.5:1 for
+     normal text; --ink clears it comfortably. */
+  color: var(--ink);
+  opacity: 0.72;
+  text-decoration: none;
+  font-size: 13.5px;
+  font-weight: 600;
+  padding: 8px 12px;
+  border-radius: 0;
+}
+.nav-links a:hover, .nav-links a.current { opacity: 1; background: rgba(22,33,14,0.12); }
+
+/* ── Layout ──────────────────────────────────────────────────────────── */
+main { max-width: 1080px; margin: 0 auto; padding: 0 24px; }
+section { padding: 56px 0; }
+section + section { border-top: 3px dashed var(--leaf-dark); }
+.narrow { max-width: 720px; }
+
+.hero {
+  padding: 72px 0 56px;
+  text-align: center;
+}
+.hero h1 { font-size: clamp(1.3rem, 3.6vw, 2rem); }
+.hero .sub { font-family: 'VT323', monospace; font-size: 1.7rem; color: var(--ink-soft); margin-bottom: 0.6em; }
+.hero .desc { max-width: 640px; margin: 0 auto 2em; font-size: 1.05rem; color: var(--ink-soft); }
+
+/* ── Buttons ─────────────────────────────────────────────────────────── */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 14px 24px;
+  border-radius: 0;
+  font-family: 'Press Start 2P', monospace;
+  font-size: 12px;
+  text-decoration: none;
+  border: 3px solid var(--ink);
+  box-shadow: var(--pixel-shadow);
+  transition: transform 0.06s ease, box-shadow 0.06s ease;
+}
+.btn:active { transform: translate(4px, 4px); box-shadow: 0 0 0 var(--ink); }
+/* color:ink not #fff — white on the bright --leaf background is only
+   3.55:1, under WCAG AA; dark ink text clears it (4.71:1) while keeping
+   the punchier bright-green button face instead of dulling it down. */
+.btn-primary { background: var(--leaf); color: var(--ink); }
+.btn-primary:hover { background: var(--leaf-dark); color: #fff; }
+.btn-secondary { background: var(--surface); color: var(--leaf-dark); }
+.btn-secondary:hover { background: var(--tint); }
+.btn-row { display: flex; gap: 14px; justify-content: center; flex-wrap: wrap; }
+
+/* ── Cards / grids ───────────────────────────────────────────────────── */
+.grid { display: grid; gap: 24px; }
+.grid-3 { grid-template-columns: repeat(3, 1fr); }
+.grid-2 { grid-template-columns: repeat(2, 1fr); }
+@media (max-width: 720px) { .grid-3, .grid-2 { grid-template-columns: 1fr; } }
+
+.card {
+  background: var(--surface);
+  border: 3px solid var(--ink);
+  border-radius: 0;
+  padding: 24px;
+  box-shadow: var(--pixel-shadow);
+}
+.card .icon { font-size: 28px; margin-bottom: 10px; display: block; }
+.card .icon-img { width: 30px; height: 30px; margin-bottom: 10px; display: block; image-rendering: pixelated; }
+
+/* ── Loot icons ──────────────────────────────────────────────────────── */
+/* Pixel-art item sprites — same family the app itself renders in
+   inventory/loot/shop rows, used here purely as a decorative "what you'll
+   be tracking" flourish. image-rendering:pixelated keeps their crisp,
+   blocky look at 2-3x their native 34px instead of letting the browser
+   blur them via smooth upscaling. */
+.hero-icons {
+  display: flex;
+  justify-content: center;
+  gap: 18px;
+  margin: 28px 0 8px;
+}
+.hero-icons img {
+  width: 40px;
+  height: 40px;
+  image-rendering: pixelated;
+  transition: transform 0.15s ease;
+}
+.hero-icons img:nth-child(even) { transform: rotate(-6deg); }
+.hero-icons img:nth-child(odd) { transform: rotate(5deg); }
+.hero-icons img:hover { transform: scale(1.2) rotate(0deg); }
+@media (max-width: 560px) {
+  .hero-icons img { width: 30px; height: 30px; }
+  .hero-icons { gap: 10px; }
+}
+
+.tag-icon {
+  width: 16px;
+  height: 16px;
+  image-rendering: pixelated;
+  vertical-align: -3px;
+  margin-right: 6px;
+}
+.h3-icon {
+  width: 26px;
+  height: 26px;
+  image-rendering: pixelated;
+  vertical-align: -6px;
+  margin-right: 8px;
+}
+/* Emoji fallback for the one row with no matching pixel icon (Dice Roller —
+   no die/d20 exists anywhere in the sprite pack) — sized/spaced to sit at
+   the same baseline as .h3-icon rather than looking like an afterthought. */
+.h3-emoji {
+  font-size: 22px;
+  margin-right: 8px;
+}
+.card h3 { font-size: 1.7rem; margin-bottom: 8px; }
+.card p { color: var(--ink-soft); font-size: 0.95rem; margin-bottom: 0; }
+
+.feature-row {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 12px;
+  padding: 28px 0;
+}
+.feature-row + .feature-row { border-top: 3px dashed var(--border); }
+.feature-row h3 { font-size: 2rem; }
+.feature-row .tag { font-family: 'Press Start 2P', monospace; font-size: 9px; letter-spacing: 0.04em; text-transform: uppercase; color: var(--leaf-dark); background: var(--tint); border: 2px solid var(--leaf-dark); display: inline-block; padding: 5px 9px; border-radius: 0; margin-bottom: 12px; }
+.feature-row p { color: var(--ink-soft); }
+
+/* A feature-row that also carries real app screenshots: text stays a
+   single column above, screenshots sit beside it on wide screens (matching
+   the phone's actual tall aspect ratio, hard-cornered like every other
+   pixel-card on the site) and drop below it once the row can't fit both
+   side by side. */
+.feature-row-media { display: grid; grid-template-columns: 1fr; gap: 20px; align-items: start; }
+@media (min-width: 721px) {
+  .feature-row-media { grid-template-columns: 1fr auto; }
+}
+.feature-shots { display: flex; gap: 14px; flex-wrap: wrap; }
+@media (min-width: 721px) {
+  .feature-shots { justify-content: flex-end; }
+}
+.feature-shot {
+  width: 170px;
+  height: auto;
+  display: block;
+  border: 3px solid var(--ink);
+  box-shadow: var(--pixel-shadow-sm);
+}
+@media (max-width: 560px) {
+  .feature-shot { width: 42vw; max-width: 200px; }
+}
+
+/* ── FAQ ─────────────────────────────────────────────────────────────── */
+.faq-item { padding: 20px 0; border-top: 3px dashed var(--border); }
+.faq-item:first-child { border-top: none; }
+.faq-item h3 { font-size: 1.6rem; margin-bottom: 6px; }
+.faq-item p { color: var(--ink-soft); margin-bottom: 0; }
+
+/* ── Contact ─────────────────────────────────────────────────────────── */
+.contact-list { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 14px; }
+.contact-list a { color: var(--ink); text-decoration: none; font-weight: 600; }
+.contact-list a:hover { color: var(--leaf-dark); }
+.contact-list .label { font-family: 'Press Start 2P', monospace; font-size: 9px; letter-spacing: 0.04em; text-transform: uppercase; color: var(--ink-faint); display: block; margin-bottom: 4px; }
+
+/* ── Footer ──────────────────────────────────────────────────────────── */
+.site-footer {
+  border-top: 4px solid var(--ink);
+  padding: 28px 24px 40px;
+  text-align: center;
+  color: var(--ink-faint);
+  font-size: 13px;
+}
+.site-footer a { color: var(--ink-faint); }
+.site-footer nav { margin-bottom: 10px; }
+.site-footer nav a { margin: 0 8px; text-decoration: none; font-weight: 600; }
+.site-footer nav a:hover { color: var(--leaf-dark); }
+
+/* ── Misc ────────────────────────────────────────────────────────────── */
+.callout {
+  background: var(--tint);
+  border: 3px solid var(--ink);
+  border-radius: 0;
+  padding: 20px 24px;
+  margin: 24px 0;
+  box-shadow: var(--pixel-shadow-sm);
+}
+.draft-notice {
+  background: #fff6e5;
+  border: 3px solid #e8c874;
+  border-radius: 0;
+  padding: 14px 18px;
+  font-size: 13.5px;
+  color: #6b4f00;
+  margin-bottom: 28px;
+}
+
+/* ── Reference/doc pages (e.g. Custom Inventory Guide) ──────────────────
+   A longer technical page than the rest of the marketing site: needs a
+   jump-nav, data tables, and code blocks, none of which exist elsewhere.
+   Code blocks go dark/terminal instead of the light pixel-card look —
+   reads as "this is data, not marketing copy" and leans on the VT323
+   terminal font already used for card titles. */
+.doc-jump {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 28px 0 0;
+}
+.doc-jump a {
+  font-family: 'VT323', monospace;
+  font-size: 15px;
+  letter-spacing: 0.02em;
+  color: var(--leaf-dark);
+  text-decoration: none;
+  background: var(--tint);
+  border: 2px solid var(--leaf-dark);
+  padding: 5px 10px;
+}
+.doc-jump a:hover { background: var(--leaf-bright); color: var(--ink); }
+
+.doc-section { padding: 40px 0; }
+.doc-section + .doc-section { border-top: 3px dashed var(--border); }
+.doc-section h2 { font-size: 1.5rem; }
+.doc-sub {
+  font-family: 'Press Start 2P', monospace;
+  font-size: 10px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+  margin: 28px 0 10px;
+}
+.doc-section h4 {
+  font-family: 'VT323', monospace;
+  font-size: 1.3rem;
+  color: var(--leaf-dark);
+  margin: 18px 0 6px;
+}
+.doc-section p { color: var(--ink-soft); }
+.doc-section ul { color: var(--ink-soft); padding-left: 22px; }
+.doc-section li { margin-bottom: 6px; }
+
+.doc-badge {
+  display: inline-block;
+  font-family: 'Press Start 2P', monospace;
+  font-size: 8.5px;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  padding: 4px 7px;
+  border: 2px solid;
+  white-space: nowrap;
+}
+.doc-badge-req { color: var(--danger); border-color: var(--danger); background: #fbe4e2; }
+.doc-badge-opt { color: var(--ink-faint); border-color: var(--ink-faint); background: var(--tint); }
+
+.doc-table-wrap {
+  overflow-x: auto;
+  margin: 0 0 18px;
+  border: 3px solid var(--ink);
+  box-shadow: var(--pixel-shadow-sm);
+}
+.doc-table { width: 100%; border-collapse: collapse; font-size: 14px; }
+.doc-table thead th {
+  background: var(--header-bg);
+  font-family: 'VT323', monospace;
+  font-size: 16px;
+  text-align: left;
+  padding: 8px 12px;
+  border-bottom: 3px solid var(--ink);
+  white-space: nowrap;
+}
+.doc-table td { padding: 8px 12px; border-top: 2px solid rgba(22,33,14,0.15); vertical-align: top; color: var(--ink-soft); }
+.doc-table tbody tr:nth-child(even) td { background: var(--tint); }
+.doc-field { font-family: 'VT323', monospace; font-size: 16px; color: var(--leaf-dark); white-space: nowrap; }
+
+.doc-code {
+  background: var(--ink);
+  border: 3px solid var(--ink);
+  box-shadow: var(--pixel-shadow-sm);
+  margin: 0 0 18px;
+  overflow: hidden;
+}
+.doc-code-label {
+  background: rgba(255,255,255,0.08);
+  color: #cfe8bd;
+  font-family: 'VT323', monospace;
+  font-size: 14px;
+  letter-spacing: 0.03em;
+  padding: 6px 14px;
+  border-bottom: 2px solid rgba(255,255,255,0.15);
+}
+.doc-code pre { margin: 0; padding: 16px 18px; overflow-x: auto; font-family: 'VT323', monospace; font-size: 16px; line-height: 1.5; color: #eaf5df; }
+.doc-code .tok-str { color: #a8e08f; }
+.doc-code .tok-key { color: #8fd0ff; }
+.doc-code .tok-num { color: #f4c76a; }
+.doc-code .tok-comment { color: #7a8f6d; font-style: italic; }
+
+.doc-section p code, .doc-section li code, .doc-table td code {
+  font-family: 'VT323', monospace;
+  font-size: 15px;
+  background: var(--tint);
+  border: 2px solid var(--ink-faint);
+  padding: 0 5px;
+  color: var(--leaf-dark);
+}
