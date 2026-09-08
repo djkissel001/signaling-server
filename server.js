@@ -101,7 +101,38 @@ function recordEvent(roomCode, eventName, payload, recipientCount) {
 // for), plus /features, /support, /download, /contact, /privacy-policy.
 // `extensions: ['html']` lets those resolve without a literal ".html" in the
 // URL, matching the previous Google Sites page structure.
-app.use(express.static(path.join(__dirname, 'site'), { extensions: ['html'] }));
+//
+// SITE_MAINTENANCE lets the marketing site be pulled down temporarily (e.g.
+// before the app has actually launched) without touching this service at
+// all — the app's own signaling traffic (Socket.io, /health, /stats) is
+// completely untouched either way: Socket.io attaches its own listener
+// directly to the http server and never reaches this Express middleware
+// chain, and /health + /stats are explicitly excluded below since Railway's
+// own health checks depend on the former. Toggle via a Railway env var
+// (SITE_MAINTENANCE=true), no code change or redeploy needed to flip it.
+if (process.env.SITE_MAINTENANCE === 'true') {
+  const maintenancePage = `<!doctype html><html><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Elemental Inventory</title>
+<style>
+  body { margin:0; min-height:100vh; display:flex; align-items:center; justify-content:center;
+         background:#F5F8EF; color:#16210E; font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif; text-align:center; }
+  div { padding:24px; }
+  h1 { font-size:1.4rem; margin-bottom:8px; }
+  p { color:#3d5233; }
+</style></head><body>
+  <div>
+    <h1>Elemental Inventory</h1>
+    <p>The site's offline for a bit while we get ready for launch — check back soon.</p>
+  </div>
+</body></html>`;
+  app.get('*', (req, res, next) => {
+    if (req.path === '/health' || req.path === '/stats') return next();
+    res.status(503).type('html').send(maintenancePage);
+  });
+} else {
+  app.use(express.static(path.join(__dirname, 'site'), { extensions: ['html'] }));
+}
 
 // ─── Web app ──────────────────────────────────────────────────────────────────
 // The game itself, exported via `expo export -p web` with app.json's
