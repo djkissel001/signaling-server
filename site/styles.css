@@ -208,6 +208,24 @@ section + section { border-top: 3px dashed var(--leaf-dark); }
   .hero-icons { gap: 10px; }
 }
 
+/* Text left, screenshot right on wide screens; stacked and centered
+   (matching the rest of .hero) on anything narrower than that. */
+.hero-layout { display: grid; grid-template-columns: 1fr; gap: 32px; align-items: center; }
+@media (min-width: 761px) {
+  .hero-layout { grid-template-columns: 1.15fr auto; text-align: left; }
+  .hero-layout .sub, .hero-layout .desc { margin-left: 0; margin-right: auto; }
+  .hero-layout .btn-row { justify-content: flex-start; }
+}
+.hero-shot-wrap { display: flex; justify-content: center; }
+.hero-shot {
+  width: 230px;
+  height: auto;
+  display: block;
+  border: 3px solid var(--ink);
+  box-shadow: var(--pixel-shadow);
+}
+@media (max-width: 560px) { .hero-shot { width: 190px; } }
+
 .tag-icon {
   width: 16px;
   height: 16px;
