@@ -319,6 +319,46 @@ section + section { border-top: 3px dashed var(--leaf-dark); }
   margin: 24px 0;
   box-shadow: var(--pixel-shadow-sm);
 }
+/* ── Beta signup form (download.html) ───────────────────────────────────── */
+.beta-label {
+  font-family: 'Press Start 2P', monospace;
+  font-size: 9px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+  display: block;
+  margin-bottom: 10px;
+}
+.beta-form-row {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+.beta-form-row input[type="email"] {
+  flex: 1;
+  min-width: 200px;
+  font-family: 'Public Sans', sans-serif;
+  font-size: 15px;
+  padding: 12px 14px;
+  border: 3px solid var(--ink);
+  border-radius: 0;
+  background: var(--ground);
+  color: var(--ink);
+}
+.beta-form-row input[type="email"]:focus {
+  outline: 3px solid var(--leaf);
+  outline-offset: 1px;
+}
+.beta-form-row .btn {
+  flex-shrink: 0;
+}
+.beta-msg {
+  margin: 14px 0 0;
+  font-size: 14px;
+  color: var(--leaf-dark);
+  font-weight: 600;
+}
+
 .draft-notice {
   background: #fff6e5;
   border: 3px solid #e8c874;

@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Elemental Inventory — Download</title>
-<meta name="description" content="Download Elemental Inventory for Android.">
+<meta name="description" content="Join the Elemental Inventory closed beta waitlist.">
 <link rel="icon" href="/icons/ei-icon-favicon.png">
 <link rel="stylesheet" href="/styles.css">
 </head>
@@ -25,9 +25,9 @@
 
 <main>
   <section class="hero" style="padding-bottom:16px;">
-    <p class="eyebrow">Get the App</p>
-    <h1>Download Elemental Inventory</h1>
-    <p class="desc">Free to play and actively developed — no signup, no waiting on an invite. Still early software, so expect the occasional rough edge while it grows.</p>
+    <p class="eyebrow">Get Early Access</p>
+    <h1>Join the Beta</h1>
+    <p class="desc">Elemental Inventory is in closed testing right now, ahead of a full Play Store launch. Drop your email and we'll send you an invite as spots open up.</p>
     <div class="hero-icons" aria-hidden="true">
       <img src="/icons/axe.png" alt="">
       <img src="/icons/shield.png" alt="">
@@ -36,12 +36,25 @@
   </section>
 
   <section style="padding-top:0;">
-    <div class="grid grid-2">
+    <div class="narrow" style="margin:0 auto;">
+      <div class="card">
+        <form id="betaForm" class="beta-form">
+          <label for="betaEmail" class="beta-label">Email address</label>
+          <div class="beta-form-row">
+            <input type="email" id="betaEmail" name="email" placeholder="you@example.com" required>
+            <button type="submit" class="btn btn-primary">Join the Beta</button>
+          </div>
+        </form>
+        <p id="betaMsg" class="beta-msg" hidden></p>
+      </div>
+    </div>
+
+    <div class="grid grid-2" style="margin-top:24px;">
       <div class="card">
         <img class="icon-img" src="/icons/chest.png" alt="">
         <h3>What you get</h3>
         <ul style="color:var(--ink-soft); padding-left:20px; margin:0;">
-          <li>Free, full access — nothing gated behind a signup</li>
+          <li>Free, full access to the app — no in-app purchases</li>
           <li>Direct developer contact for bugs and feedback</li>
           <li>A seat in the community Discord</li>
         </ul>
@@ -58,15 +71,43 @@
     </div>
 
     <div class="callout">
-      <strong>Technical requirements:</strong> an Android device. That's it.
-    </div>
-
-    <div style="text-align:center; margin-top:32px;">
-      <!-- TODO: replace href="#" with the real Play Store listing URL. -->
-      <a class="btn btn-primary" href="#">Get it on Google Play</a>
+      <strong>Technical requirements:</strong> an Android device (or a free desktop Android emulator — see <a href="/support">Support</a>). Joining the beta requires a Google account, since testers install through the Play Store's closed testing program.
     </div>
   </section>
 </main>
+
+<script>
+  // Posts to Formspree (formspree.io) rather than any server this site runs —
+  // Railway's container here is stateless by design (no database, redeploys
+  // wipe local files), so signups need to live somewhere that isn't this
+  // repo's own backend.
+  const betaForm = document.getElementById('betaForm');
+  const betaMsg = document.getElementById('betaMsg');
+  betaForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const submitBtn = betaForm.querySelector('button');
+    submitBtn.disabled = true;
+    try {
+      const res = await fetch('https://formspree.io/f/xyeyvaad', {
+        method: 'POST',
+        headers: { Accept: 'application/json' },
+        body: new FormData(betaForm),
+      });
+      betaMsg.hidden = false;
+      if (res.ok) {
+        betaForm.hidden = true;
+        betaMsg.textContent = "You're on the list — we'll email you when a beta spot opens up.";
+      } else {
+        betaMsg.textContent = 'Something went wrong — try again, or email us directly.';
+        submitBtn.disabled = false;
+      }
+    } catch (err) {
+      betaMsg.hidden = false;
+      betaMsg.textContent = 'Something went wrong — try again, or email us directly.';
+      submitBtn.disabled = false;
+    }
+  });
+</script>
 
 <footer class="site-footer">
   <nav>
