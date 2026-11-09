@@ -205,6 +205,34 @@ app.get('/stats', (req, res) => {
   });
 });
 
+// A single malformed payload (missing/null args that fail destructuring, or
+// any other throw) inside a socket event handler propagates up through
+// Socket.IO's event emitter uncaught — crashing the whole process and
+// dropping every room, not just the sender. Wrapping each handler turns that
+// into a logged, contained failure for just that one message.
+function safe(eventName, handler) {
+  return (...args) => {
+    try {
+      handler(...args);
+    } catch (err) {
+      console.error(`[${eventName}] handler error:`, err);
+    }
+  };
+}
+
+// Last-resort net for anything outside the socket handlers above (express
+// routes, timers, etc). Logs with a full stack — unlike the empty err.log
+// from past crashes — then exits so Railway/Fly restarts cleanly, rather
+// than limping on in a possibly-corrupted state.
+process.on('uncaughtException', (err) => {
+  console.error('[uncaughtException]', err);
+  process.exit(1);
+});
+process.on('unhandledRejection', (err) => {
+  console.error('[unhandledRejection]', err);
+  process.exit(1);
+});
+
 // ─── Connection ───────────────────────────────────────────────────────────────
 io.on('connection', (socket) => {
   console.log(`Socket connected: ${socket.id}`);
@@ -222,7 +250,7 @@ io.on('connection', (socket) => {
   //
   // Broadcasts to all existing peers in the room:
   //   'peer-joined' -> { peerId, role }
-  socket.on('join-room', ({ roomCode, peerId, role }) => {
+  socket.on('join-room', safe('join-room', ({ roomCode, peerId, role } = {}) => {
     if (!roomCode || !peerId) {
       socket.emit('error', { message: 'roomCode and peerId are required' });
       return;
@@ -267,13 +295,13 @@ io.on('connection', (socket) => {
     socket.to(roomCode).emit('peer-joined', { peerId, role });
 
     console.log(`[${roomCode}] ${peerId} joined as ${role}. Room size: ${room.size}`);
-  });
+  }));
 
   // ── offer ──────────────────────────────────────────────────────────────────
   // The joining peer sends an SDP offer to an existing peer to initiate
   // a WebRTC connection. This server just forwards it.
   // Payload: { to: peerId, offer: RTCSessionDescriptionInit }
-  socket.on('offer', ({ to, offer }) => {
+  socket.on('offer', safe('offer', ({ to, offer } = {}) => {
     if (!validateInRoom(socket, currentRoom, currentPeerId)) return;
 
     const target = getPeer(currentRoom, to);
@@ -284,12 +312,12 @@ io.on('connection', (socket) => {
 
     io.to(target.socketId).emit('offer', { from: currentPeerId, offer });
     recordEvent(currentRoom, 'offer', offer, 1);
-  });
+  }));
 
   // ── answer ─────────────────────────────────────────────────────────────────
   // The existing peer responds to an offer with an SDP answer.
   // Payload: { to: peerId, answer: RTCSessionDescriptionInit }
-  socket.on('answer', ({ to, answer }) => {
+  socket.on('answer', safe('answer', ({ to, answer } = {}) => {
     if (!validateInRoom(socket, currentRoom, currentPeerId)) return;
 
     const target = getPeer(currentRoom, to);
@@ -300,13 +328,13 @@ io.on('connection', (socket) => {
 
     io.to(target.socketId).emit('answer', { from: currentPeerId, answer });
     recordEvent(currentRoom, 'answer', answer, 1);
-  });
+  }));
 
   // ── ice-candidate ──────────────────────────────────────────────────────────
   // ICE candidates are network address details that help peers punch through
   // NATs and firewalls. Both sides trickle these to each other during setup.
   // Payload: { to: peerId, candidate: RTCIceCandidateInit }
-  socket.on('ice-candidate', ({ to, candidate }) => {
+  socket.on('ice-candidate', safe('ice-candidate', ({ to, candidate } = {}) => {
     if (!validateInRoom(socket, currentRoom, currentPeerId)) return;
 
     const target = getPeer(currentRoom, to);
@@ -314,24 +342,24 @@ io.on('connection', (socket) => {
 
     io.to(target.socketId).emit('ice-candidate', { from: currentPeerId, candidate });
     recordEvent(currentRoom, 'ice-candidate', candidate, 1);
-  });
+  }));
 
   // ── broadcast-action ──────────────────────────────────────────────────────
   // Relay a game action to all other peers in the room.
   // Used by both DM and players to propagate inventory/gold/etc changes.
-  socket.on('broadcast-action', (action) => {
+  socket.on('broadcast-action', safe('broadcast-action', (action) => {
     if (!currentRoom) return;
     socket.to(currentRoom).emit('action-received', action);
     const recipients = (rooms.get(currentRoom)?.size ?? 1) - 1;
     recordEvent(currentRoom, 'broadcast-action', action, recipients);
-  });
+  }));
 
   // ── send-state ─────────────────────────────────────────────────────────────
   // Relay full game state from DM to players.
   // { to: peerId | null, state: object }
   // If `to` is null, relays to all other peers in the room.
   // If `to` is a peerId, relays only to that peer.
-  socket.on('send-state', ({ to, state }) => {
+  socket.on('send-state', safe('send-state', ({ to, state } = {}) => {
     if (!currentRoom) return;
     const eventName = state && state.inventoryData !== undefined
       ? 'send-state-with-catalog' : 'send-state-without-catalog';
@@ -346,35 +374,35 @@ io.on('connection', (socket) => {
       const recipients = (rooms.get(currentRoom)?.size ?? 1) - 1;
       recordEvent(currentRoom, eventName, state, recipients);
     }
-  });
+  }));
 
   // ── broadcast-notification ─────────────────────────────────────────────────
   // Relay a UI notification to all other peers in the room.
-  socket.on('broadcast-notification', (notification) => {
+  socket.on('broadcast-notification', safe('broadcast-notification', (notification) => {
     if (!currentRoom) return;
     socket.to(currentRoom).emit('notification-received', notification);
     const recipients = (rooms.get(currentRoom)?.size ?? 1) - 1;
     recordEvent(currentRoom, 'broadcast-notification', notification, recipients);
-  });
+  }));
 
   // ── leave-room ─────────────────────────────────────────────────────────────
   // Peer explicitly leaves (e.g. user ends the session)
-  socket.on('leave-room', () => {
+  socket.on('leave-room', safe('leave-room', () => {
     if (currentRoom && currentPeerId) {
       handleLeave(socket, currentRoom, currentPeerId);
       currentRoom = null;
       currentPeerId = null;
     }
-  });
+  }));
 
   // ── disconnect ─────────────────────────────────────────────────────────────
   // Handles unexpected disconnects: app backgrounded, network lost, etc.
-  socket.on('disconnect', (reason) => {
+  socket.on('disconnect', safe('disconnect', (reason) => {
     console.log(`Socket disconnected: ${socket.id} (${reason})`);
     if (currentRoom && currentPeerId) {
       handleLeave(socket, currentRoom, currentPeerId);
     }
-  });
+  }));
 });
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
